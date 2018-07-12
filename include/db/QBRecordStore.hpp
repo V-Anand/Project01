@@ -3,7 +3,8 @@
 
 #include <db/QBRecordCollection.hpp>
 
-#include <vector>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace db {
 
@@ -12,7 +13,11 @@ namespace db {
      */
     class QBRecordStore
     {
-            QBRecordCollection records_;
+            using RecordsType = std::unordered_map<QBRecord::IdType, QBRecord>;
+            using IndicesType = std::unordered_map<std::string, std::unordered_set<QBRecord::IdType> >;
+
+            RecordsType records_;
+            mutable IndicesType indices_;
 
         public:
             QBRecordStore(); 
@@ -29,7 +34,7 @@ namespace db {
                 Insert a record into record collection
                 record - record to be inserted
             */
-            void QBInsert(QBRecord const& rec);
+            bool QBInsert(QBRecord const& rec);
 
             /**
                 Delete a record from record collection

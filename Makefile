@@ -1,10 +1,15 @@
 
 SHAREDOBJ = libInMemDb
 
-$(SHAREDOBJ).so : src/QBProfiler.o src/QBRecordStore.o
+$(SHAREDOBJ).so : src/QBProfiler.o src/QBRecordStore.o src/QBRecord.o
 	$(CXX) -shared $^ -o $@ 
 
-src/QBProfiler.o src/QBRecordStore.o : CXXFLAGS+=-fPIC -I include -std=c++11
+src/QBProfiler.o src/QBRecordStore.o src/QBRecord.o : CXXFLAGS+=-fPIC -I include -std=c++11
+
+clean:
+	@echo Cleaning
+	rm -rf InMemTester libInMemDb.so src/*.o
+	@echo Done
 
 test:
 	@echo Testing

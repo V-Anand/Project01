@@ -16,7 +16,8 @@ namespace {
         {
         }
 
-        void profileQuery(std::string const& query, int expectedCount)
+        template <typename ProfilerCb>
+        void profileQuery(std::string const& query, ProfilerCb const& callback)
         {
             db::QBProfiler profiler;
 
@@ -25,10 +26,7 @@ namespace {
             auto filteredSet = store.QBFindMatchingRecords(query);
             profiler.stop();
 
-            std::cout << "profiler: " << profiler.elapsedInSecs() << std::endl;
-
-            // make sure that the function is correct
-            assert(filteredSet.size() == expectedCount);
+            callback(filteredSet, profiler.elapsedInSecs());
         }
 
         /**
@@ -40,7 +38,7 @@ namespace {
         {
             for (int i = 0; i < numRecords; i++)
             {
-                db::QBRecord rec = { i, prefix + std::to_string(i) };
+                db::QBRecord rec{ i, prefix + std::to_string(i) };
                 store.QBInsert(rec);
             }
         }
@@ -52,7 +50,16 @@ int main(int argc, const char* argv[])
     // populate a bunch of data
     TestFixture t;
     t.populateDummyData("testdata", 1000);
-    t.profileQuery("testdata500", 1);
+    for (int i=0; i<10; ++i)
+    {
+        t.profileQuery( "testdata500", 
+                    [](db::QBRecordCollection const& records, double elapsed)
+                    {
+                        std::cout << "profiler: " << elapsed << std::endl;
+                        // make sure that the function is correct
+                        assert(records.size() == 1);
+                    } );
+    }
 
     return 0;
 }
